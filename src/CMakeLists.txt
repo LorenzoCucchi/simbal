@@ -1,11 +1,9 @@
 set(SOURCES
-  "hello.cpp"
-  "hello.hpp"
   "frames/frames.cpp"
   "environment/atmosisa.cpp"
   "environment/geodetic.cpp"
   "projectile/projectile.cpp"
-  "eom.cpp"
+  "pointMass.cpp"
 )
 
 

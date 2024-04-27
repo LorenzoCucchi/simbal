@@ -3,9 +3,14 @@
 #include "environment/atmosisa.hpp"
 #include "environment/geodetic.hpp"
 #include "projectile/projectile.hpp"
+#include <condition_variable>
 #include <eigen3/Eigen/src/Core/Matrix.h>
+#include <fstream>
+#include <iostream>
+#include <queue>
+#include <tuple>
 
-typedef Eigen::Matrix<double, 19, 1> state_type;
+typedef Eigen::Matrix<double, 18, 1> state_type;
 
 class Eom {
 public:
@@ -17,14 +22,33 @@ public:
 
 private:
   double dt;
+  std::queue<std::tuple<double, state_type, state_type>> dataQueue;
 
   double Re = 6378137.0;
 
   Eigen::Vector3d w_ei{0, 0, 7.2921159e-5};
-
+  
   Geodetic geodetic;
   Atmosphere atmosphere;
   Projectile projectile;
 
   state_type initial_state;
+
+  // data
+  Eigen::Vector3d pos_f;
+  Eigen::Vector3d vel_f;
+  Eigen::Vector3d acc_f;
+  Eigen::Vector3d eulAng;
+  Eigen::Vector2d coordAng;
+  Eigen::Vector3d coordAcc;
+  double h;
+  Eigen::Vector3d Fa_n;
+  Eigen::Vector3d r_e;
+  Eigen::Vector3d w_fe;
+  Eigen::Matrix3d Omega_fe;
+  Eigen::Vector3d accCor;
+  Eigen::Matrix3d R_fe;
+  Eigen::Matrix3d R_dot_fe;
+  Eigen::Vector3d rad_acc;
+
 };

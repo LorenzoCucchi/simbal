@@ -1,5 +1,4 @@
 set(SOURCES
-  "hello_test.cpp"
   "test_frames.cpp"
   "test_atmosisa.cpp"
 )
