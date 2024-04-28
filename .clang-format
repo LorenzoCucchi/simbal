@@ -1,17 +1,35 @@
 # Google C/C++ Code Style settings
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-{
-  BasedOnStyle: Google,
-  Document: Google C/C++ Code Style settings,
-  AccessModifierOffset: -4,
-  AlignConsecutiveAssignments: true,
-  AllowShortIfStatementsOnASingleLine: false,
-  AllowShortLoopsOnASingleLine: false,
-  BreakBeforeBraces: Allman,
-  ColumnLimit: 80,
-  ConstructorInitializerAllOnOneLineOrOnePerLine: false,
-  IndentCaseLabels: true,
-  IndentWidth: 4,
-  KeepEmptyLinesAtTheStartOfBlocks: true,  
-}
+
+  AllowShortBlocksOnASingleLine: Always
+  AllowShortEnumsOnASingleLine: false
+  AllowShortFunctionsOnASingleLine: All
+  AllowShortIfStatementsOnASingleLine: WithoutElse
+  AllowShortLambdasOnASingleLine: Inline
+  ColumnLimit: 80
+  Standard: c++17
+  AccessModifierOffset: "-4"
+  AlignEscapedNewlines: Left
+  AllowAllConstructorInitializersOnNextLine: "true"
+  BinPackArguments: "false"
+  BinPackParameters: "false"
+  BreakConstructorInitializers: AfterColon
+  ConstructorInitializerAllOnOneLineOrOnePerLine: "true"
+  DerivePointerAlignment: "false"
+  FixNamespaceComments: "true"
+  IndentCaseLabels: "false"
+  IndentPPDirectives: AfterHash
+  IndentWidth: "4"
+  NamespaceIndentation: All
+  PointerAlignment: Left
+  SpaceBeforeCtorInitializerColon: "false"
+  SpaceInEmptyParentheses: "false"
+  SpacesInParentheses: "true"
+  TabWidth: "4"
+  UseTab: Never
+  AlwaysBreakTemplateDeclarations: Yes
+  SpaceAfterTemplateKeyword: true
+  SortUsingDeclarations: true
+  ReflowComments: true
+
 

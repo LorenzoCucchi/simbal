@@ -14,6 +14,7 @@ target_compile_definitions(eigen INTERFACE EIGEN_MAX_ALIGN_BYTES=0)
 add_subdirectory(libs/Catch2 EXCLUDE_FROM_ALL)
 list(APPEND CMAKE_MODULE_PATH libs/Catch2/contrib)
 
+add_subdirectory(libs/spdlog)
 
 
 add_subdirectory(src)

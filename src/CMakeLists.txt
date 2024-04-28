@@ -4,6 +4,8 @@ set(SOURCES
   "environment/geodetic.cpp"
   "projectile/projectile.cpp"
   "pointMass.cpp"
+  "mission.cpp"
+  "json.hpp"
 )
 
 
@@ -13,7 +15,7 @@ add_library(${LIB_NAME} STATIC ${SOURCES})
 
 set_target_properties(${LIB_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
-target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} frames environment)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} frames environment spdlog::spdlog_header_only)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

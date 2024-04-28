@@ -1,0 +1,27 @@
+{
+  "Coordinates": {
+    "Type": "wgs84",
+    "Unit": "degree",
+    "latitude": 0,
+    "longitude": 0,
+    "Altitude": 0
+  },
+  "Target": {
+    "distance": 0,
+    "azimuth": 0,
+    "LOS_angle":0
+  },
+  "Atmosphere": {
+    "temperature": 15,
+    "pressure": 1013,
+    "humidity": 0.5
+  },
+  "Gun":{
+    "projectile_name": "projectile",
+    "twist": 11.0,
+    "velocity": 800,
+    "sight_height": 0.045,
+    "zero_range": 100
+  }
+
+}

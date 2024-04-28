@@ -3,10 +3,8 @@
 #include "environment/atmosisa.hpp"
 #include "environment/geodetic.hpp"
 #include "projectile/projectile.hpp"
-#include <condition_variable>
 #include <eigen3/Eigen/src/Core/Matrix.h>
-#include <fstream>
-#include <iostream>
+
 #include <queue>
 #include <tuple>
 
@@ -18,6 +16,7 @@ public:
             Eigen::Vector2d coord_angles, double h, double dt);
   void system(const state_type &x, state_type &dxdt, double t);
   void runge_kutta4(state_type &x, double t);
+  void step();
   void simulate(double V, double theta, double psi, double fin_alt, double dt);
 
 private:
@@ -27,12 +26,14 @@ private:
   double Re = 6378137.0;
 
   Eigen::Vector3d w_ei{0, 0, 7.2921159e-5};
-  
+
   Geodetic geodetic;
   Atmosphere atmosphere;
   Projectile projectile;
 
   state_type initial_state;
+  state_type x;
+  double t;
 
   // data
   Eigen::Vector3d pos_f;
@@ -50,5 +51,4 @@ private:
   Eigen::Matrix3d R_fe;
   Eigen::Matrix3d R_dot_fe;
   Eigen::Vector3d rad_acc;
-
 };

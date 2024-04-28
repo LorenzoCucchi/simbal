@@ -4,6 +4,8 @@
 # Build folder
 build/
 doc/out/
+.cache/
+.vscode/
 # Compiled Object files
 *.slo
 *.lo

@@ -1,5 +1,4 @@
 #include "atmosisa.hpp"
-
 #include <cmath>
 
 void Atmosphere::update(double target_altitude) {
@@ -27,8 +26,8 @@ void Atmosphere::atmos_press_temp() {
       start_pressure =
           compute_pressure(start_temperature, start_gradient, this->H[i],
                            start_altitude, start_pressure);
-      start_temperature = start_temperature +
-                          start_gradient * (this->H[i] - start_altitude);
+      start_temperature =
+          start_temperature + start_gradient * (this->H[i] - start_altitude);
       start_gradient = this->L_Mb[i];
       start_altitude = this->H[i];
     }
