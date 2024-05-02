@@ -7,15 +7,9 @@ set(SOURCES
 set(LIB_NAME ${PROJECT_NAME}_lib)
 set(TEST_NAME tests)
 
-find_package(Catch2 3 REQUIRED)
-
 add_executable(${TEST_NAME} test_main.cpp ${SOURCES})
 
 target_link_libraries(${TEST_NAME} PRIVATE ${LIB_NAME} Catch2::Catch2WithMain)
-
-include(CTest)
-include(Catch)
-catch_discover_tests(tests)
 
 if (MSVC)
   target_compile_options(${TEST_NAME} PRIVATE "/IW4")

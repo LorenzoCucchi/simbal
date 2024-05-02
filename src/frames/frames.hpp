@@ -6,15 +6,15 @@ class Frames {
  public:
   void initNed(double inp_Vb, double inp_theta, double inp_psi);
 
-  static Eigen::Matrix3d R_bf(const Eigen::Vector3d &euler_angles);
+  static auto R_bf(const Eigen::Vector3d &euler_angles) -> Eigen::Matrix3d;
 
-  static Eigen::Matrix3d R_fb(const Eigen::Vector3d &euler_angles);
+  static auto R_fb(const Eigen::Vector3d &euler_angles) -> Eigen::Matrix3d;
   
-  static Eigen::Matrix3d R_fe(const Eigen::Vector2d &coord_angles);
+  static auto R_fe(const Eigen::Vector2d &coord_angles) -> Eigen::Matrix3d;
 
-  static Eigen::Matrix3d R_ef(const Eigen::Vector2d &coord_angles);
+  static auto R_ef(const Eigen::Vector2d &coord_angles) -> Eigen::Matrix3d;
 
-  static Eigen::Matrix3d Om_fe(const Eigen::Vector3d &w_fe);
+  static auto Om_fe(const Eigen::Vector3d &w_fe) -> Eigen::Matrix3d;
 
  private:
   double theta;

@@ -18,7 +18,7 @@ TEST_CASE("Atmosphere test") {
     REQUIRE(atmosphere.get_density() == Catch::Approx(1.225));
   }
   SECTION("Test speed of sound at 0 altitude") {
-    REQUIRE(atmosphere.get_speed_of_sound() == Catch::Approx(340.294));
+    REQUIRE(atmosphere.get_sound() == Catch::Approx(340.294));
   }
   SECTION("Test pressure at 11 km altitude") {
     atmosphere.update(11000);
@@ -34,7 +34,7 @@ TEST_CASE("Atmosphere test") {
   }
   SECTION("Test speed of sound at 11 km altitude") {
     atmosphere.update(11000);
-    REQUIRE(atmosphere.get_speed_of_sound() == Catch::Approx(295.0695));
+    REQUIRE(atmosphere.get_sound() == Catch::Approx(295.0695));
   }
   SECTION("Test pressure at 20 km altitude") {
     atmosphere.update(20000);
@@ -50,7 +50,7 @@ TEST_CASE("Atmosphere test") {
   }
   SECTION("Test speed of sound at 20 km altitude") {
     atmosphere.update(20000);
-    REQUIRE(atmosphere.get_speed_of_sound() == Catch::Approx(295.07));
+    REQUIRE(atmosphere.get_sound() == Catch::Approx(295.07));
   }
   SECTION("Test pressure at 32 km altitude") {
     atmosphere.update(32000);

@@ -4,7 +4,7 @@
 
 #include "frames.hpp"
 
-void Frames::initNed(double inp_Vb, double inp_theta, double inp_psi) {
+void Frames::initNed(double  /*inp_Vb*/, double inp_theta, double inp_psi) {
   this->theta = inp_theta;
   this->phi = 0;
   this->psi = inp_psi;
@@ -13,7 +13,7 @@ void Frames::initNed(double inp_Vb, double inp_theta, double inp_psi) {
   this->l = 0;
 }
 
-Eigen::Matrix3d Frames::R_bf(const Eigen::Vector3d &eul) {
+auto Frames::R_bf(const Eigen::Vector3d &eul) -> Eigen::Matrix3d {
 
   Eigen::Matrix3d R_bf;
 
@@ -39,12 +39,12 @@ Eigen::Matrix3d Frames::R_bf(const Eigen::Vector3d &eul) {
   return R_bf;
 }
 
-Eigen::Matrix3d Frames::R_fb(const Eigen::Vector3d &eul) {
+auto Frames::R_fb(const Eigen::Vector3d &eul) -> Eigen::Matrix3d {
 
   return R_bf(eul).inverse();
 }
 
-Eigen::Matrix3d Frames::R_fe(const Eigen::Vector2d &coord_angles) {
+auto Frames::R_fe(const Eigen::Vector2d &coord_angles) -> Eigen::Matrix3d {
   Eigen::Matrix3d R_fe;
 
   double c_mu = cos(coord_angles(0));
@@ -67,11 +67,11 @@ Eigen::Matrix3d Frames::R_fe(const Eigen::Vector2d &coord_angles) {
   return R_fe;
 }
 
-Eigen::Matrix3d Frames::R_ef(const Eigen::Vector2d &coord_angles) {
+auto Frames::R_ef(const Eigen::Vector2d &coord_angles) -> Eigen::Matrix3d {
   return R_fe(coord_angles).inverse();
 }
 
-Eigen::Matrix3d Frames::Om_fe(const Eigen::Vector3d &w_fe) {
+auto Frames::Om_fe(const Eigen::Vector3d &w_fe) -> Eigen::Matrix3d {
   Eigen::Matrix3d Om_fe;
 
   Om_fe.setZero();

@@ -1,14 +1,19 @@
 #include "geodetic.hpp"
+
 #include <cmath>
 
+Geodetic::Geodetic() {
+  this->a2 = this->a * this->a;
+  this->b2 = this->b * this->b;
+  this->a4 = pow(this->a, 4.0);
+  this->b4 = pow(this->b, 4.0);
+  this->e2 = this->e * this->e;
+  this->gamma = this->gammaE;
+  this->radiusE = this->a;
+}
 void Geodetic::init(double latitude, double altitude) {
   this->latitude = latitude;
   this->altitudeMSL = altitude;
-  this->a2 = this->a * this->a;
-  this->b2 = this->b * this->b;
-  this->a4 = this->a2 * this->a2;
-  this->b4 = this->b2 * this->b2;
-  this->e2 = this->e * this->e;
   this->wgs84();
 }
 
