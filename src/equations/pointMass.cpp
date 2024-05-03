@@ -1,5 +1,7 @@
 #include "pointMass.hpp"
 
+#include <eigen3/Eigen/Core>
+
 #include "eigen3/Eigen/Dense"
 
 using state_type = Eigen::Matrix<double, 18, 1>;
@@ -32,7 +34,7 @@ void PointMass::init(Eigen::Vector3d& vel_b, Eigen::Vector3d& euler_angles,
 void PointMass::system(const state_type& x_state, state_type& dxdt,
                        double /*t*/) {
 
-  Eigen::Vector3d vel_f{x_state(0), x_state(1), x_state(2)};
+  this->vel_f = {x_state(0), x_state(1), x_state(2)};
   this->pos_f = {x_state(15), x_state(16), -x_state(17)};
   this->coordAng = {x_state(3), x_state(4)};
   double mu_temp = x_state(3);
@@ -81,7 +83,7 @@ void PointMass::system(const state_type& x_state, state_type& dxdt,
   dxdt.block<3, 1>(3, 0) = Eigen::Vector3d{mu_dot, l_dot, h_dot};
   dxdt.block<9, 1>(6, 0) =
       Eigen::Map<Eigen::Matrix<double, 9, 1>>(R_dot_fe.data());
-  dxdt.block<3, 1>(15, 0) = vel_f;
+  dxdt.block<3, 1>(15, 0) = this->vel_f;
 };
 
 void PointMass::runge_kutta4(state_type& x_state, double time) {
@@ -103,33 +105,18 @@ void PointMass::runge_kutta4(state_type& x_state, double time) {
 
   system(temp, k_4, time + dt);
   x_state += dt / 6.0 * (k_1 + 2.0 * k_2 + 2.0 * k_3 + k_4);
+
+  dxdt = (k_1 + 2.0 * k_2 + 2.0 * k_3 + k_4) / 6.0;
+
 }
 
 void PointMass::step() {
-
+  this->old_state = this->x_state;
   this->time += dt;
   runge_kutta4(this->x_state, time);
 }
 
-void PointMass::simulate(double vel, double theta, double psi, double fin_alt,
-                         double deltaTime) {
-  //double t_0 = 0.0;
-  //this->time = t_0;
-  //this->dt = deltaTime;
-  //this->projectile->init(0.105, 43.0, 0.1);
-  //
-  //  //Eigen::Vector3d vel_vec{vel, 0, 0};
-  //Eigen::Vector3d euler_angles{0, theta, psi};
-  //Eigen::Vector2d coord_angles{0, 0};
-  //init(vel_vec, euler_angles, 0, coord_angles, deltaTime);
-  //
-  //  //this->x_state = this->initial_state;
-  //state_type dxdt;
-  //
-  //  //while (this->x_state(5) <= fin_alt) {
-  //  this->time += dt;
-  //  runge_kutta4(this->x_state, this->time);
-  //
-  //  //  dataQueue.emplace(this->time, this->x_state, dxdt);
-  //}
+void PointMass::logData() {
+  data << time, x_state, dxdt;
 }
+

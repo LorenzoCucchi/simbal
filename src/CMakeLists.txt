@@ -6,6 +6,7 @@ set(SOURCES
   "equations/pointMass.cpp"
   "mission.cpp"
   "json.hpp"
+  "utils/logger.hpp"
 )
 
 

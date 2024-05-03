@@ -11,6 +11,7 @@
 
 #include "equations/pointMass.hpp"
 #include "json.hpp"
+#include "utils/logger.hpp"
 
 auto Mission::readInputFile(const std::filesystem::path& path) -> bool {
   nlohmann::json data{};
@@ -106,7 +107,7 @@ auto Mission::zeroing() -> bool {
                                target_.azimuth * M_PI / 180.0};
   Eigen::Vector2d coord_angles{coordinates_.lat, coordinates_.lon};
 
-  eom.init(vel_b, euler_angles, coordinates_.alt, coord_angles, 0.005);
+  eom.init(vel_b, euler_angles, coordinates_.alt, coord_angles, 0.0001);
   Eigen::Vector3d pos_b{0.0, 0.0, 0.0};
 
   double distance_init = (target_.position - pos_b).norm();
@@ -114,25 +115,46 @@ auto Mission::zeroing() -> bool {
   std::array<Eigen::Vector3d, 2> pos_data = {pos_b, pos_b};
   std::array<double, 2> distance = {distance_init, distance_init};
 
+  LoggerState<Eigen::Matrix<double, 37, 1>> logEom(
+      0.5 * 1024 * 1024 * 1024, "logEom.txt", eom.getDataName());
+  logEom.initLog();
+
   while (pos_b.block<2, 1>(0, 0).norm() < target_.distance) {
     eom.step();
     pos_b = eom.getPos();
-    std::cout << "pos_b:\n " << pos_b << std::endl;
+    //std::cout << "pos_b:\n " << pos_b << std::endl;
     distance.at(0) = distance.at(1);
     pos_data.at(0) = pos_data.at(1);
     pos_data.at(1) = pos_b;
     distance.at(1) = (target_.position - pos_b).norm();
-    std::cout << "Distance: " << distance.at(1) << std::endl;
+    //std::cout << "Distance: " << distance.at(1) << std::endl;
+    logEom.addData(eom.getData());
     if (distance.at(1) > distance.at(0)) {
+      logEom.flushData();
       break;
     }
   }
 
+  Eigen::Vector3d passing_point = missDistance(pos_data);
+  std::cout << "Passing point:\n " << passing_point << std::endl;
+
   return true;
 }
 
-// crea funzione per inizializzare simulazione
-// crea funzione che chiama lo stepper e faccia check su distanza da obbiettivo
+auto Mission::missDistance(std::array<Eigen::Vector3d, 2>& pos_data)
+    -> Eigen::Vector3d {
+  double t_interp =
+      (target_.position.block<2, 1>(0, 0) - pos_data.at(0).block<2, 1>(0, 0))
+          .norm() /
+      (pos_data.at(1).block<2, 1>(0, 0) - pos_data.at(0).block<2, 1>(0, 0))
+          .norm();
+  return Eigen::Vector3d{pos_data.at(0) +
+                         t_interp * (pos_data.at(1) - pos_data.at(0))};
+}
+
+auto Mission::calcCorrection(Eigen::Vector3d& miss) -> Eigen::Vector3d {
+  return Eigen::Vector3d{0, 0, 0};
+}
 // crea funzione che calcoli distanza da bersaglio
 // crea funzione che calcoli azzeramento
 // crea funzione che calcoli angolo di tiro e aggiustamento torrette
