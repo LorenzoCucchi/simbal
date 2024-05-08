@@ -47,10 +47,12 @@ auto Mission::readInputFile(const std::filesystem::path& path) -> bool {
     target.los_angle = Target["LOS_angle"].get<double>();
     target.altitude =
         target.distance * std::sin(target.los_angle * M_PI / 180.0);
-    target.easting =
-        target.distance * std::cos(target.los_angle) * std::sin(target.azimuth);
-    target.northing =
-        target.distance * std::cos(target.los_angle) * std::cos(target.azimuth);
+    target.easting = target.distance *
+                     std::cos(target.los_angle * M_PI / 180.0) *
+                     std::sin(target.azimuth * M_PI / 180.0);
+    target.northing = target.distance *
+                      std::cos(target.los_angle * M_PI / 180.0) *
+                      std::cos(target.azimuth * M_PI / 180.0);
     target.position =
         Eigen::Vector3d{target.northing, target.easting, target.altitude};
   } catch (const std::exception& e) {
@@ -119,7 +121,7 @@ auto Mission::zeroing() -> bool {
       0.5 * 1024 * 1024 * 1024, "logEom.txt", eom.getDataName());
   logEom.initLog();
 
-  while (pos_b.block<2, 1>(0, 0).norm() < target_.distance) {
+  while (pos_b.block<2, 1>(0, 0).norm() < target_.distance*1.01) {
     eom.step();
     pos_b = eom.getPos();
     //std::cout << "pos_b:\n " << pos_b << std::endl;
@@ -137,25 +139,66 @@ auto Mission::zeroing() -> bool {
 
   Eigen::Vector3d passing_point = missDistance(pos_data);
   std::cout << "Passing point:\n " << passing_point << std::endl;
+  Eigen::Vector3d correction = calcCorrection(passing_point);
+  std::cout << "Ang correction:\n " << correction << std::endl;
+
+  // _________________________________________________________________
+  double theta_corr = initial_theta + correction(1);
+
+  Eigen::Vector3d euler_correct{
+      0, theta_corr, (target_.azimuth * M_PI / 180.0 - correction(2))};
+
+  eom.init(vel_b, euler_correct, coordinates_.alt, coord_angles, 0.0001);
+
+  pos_data = {pos_b, pos_b};
+  distance = {distance_init, distance_init};
+
+  LoggerState<Eigen::Matrix<double, 37, 1>> logEom2(
+      0.5 * 1024 * 1024 * 1024, "logEom_corr.txt", eom.getDataName());
+  logEom2.initLog();
+
+  while (pos_b.block<2, 1>(0, 0).norm() < target_.distance) {
+    eom.step();
+    pos_b = eom.getPos();
+    //std::cout << "pos_b:\n " << pos_b << std::endl;
+    distance.at(0) = distance.at(1);
+    pos_data.at(0) = pos_data.at(1);
+    pos_data.at(1) = pos_b;
+    distance.at(1) = (target_.position - pos_b).norm();
+    //std::cout << "Distance: " << distance.at(1) << std::endl;
+    logEom2.addData(eom.getData());
+    if (distance.at(1) > distance.at(0)) {
+      logEom2.flushData();
+      break;
+    }
+  }
+
+  passing_point = missDistance(pos_data);
+  std::cout << "Miss distance:\n " << passing_point << std::endl;
+  correction = calcCorrection(passing_point);
+  std::cout << "Ang correction:\n " << calcCorrection(passing_point)
+            << std::endl;
 
   return true;
 }
 
 auto Mission::missDistance(std::array<Eigen::Vector3d, 2>& pos_data)
     -> Eigen::Vector3d {
+  std::cout << target_.position << std::endl;
   double t_interp =
       (target_.position.block<2, 1>(0, 0) - pos_data.at(0).block<2, 1>(0, 0))
           .norm() /
       (pos_data.at(1).block<2, 1>(0, 0) - pos_data.at(0).block<2, 1>(0, 0))
           .norm();
   return Eigen::Vector3d{pos_data.at(0) +
-                         t_interp * (pos_data.at(1) - pos_data.at(0))};
+                         t_interp * (pos_data.at(1) - pos_data.at(0)) -
+                         target_.position};
 }
 
-auto Mission::calcCorrection(Eigen::Vector3d& miss) -> Eigen::Vector3d {
-  return Eigen::Vector3d{0, 0, 0};
+auto Mission::calcCorrection(Eigen::Vector3d& miss) const -> Eigen::Vector3d {
+  double theta = -atan(miss(2) / target_.distance);
+  double azimu = atan(miss.block<2, 1>(0, 0).norm() / target_.distance);
+  return Eigen::Vector3d{0, theta, azimu};
 }
-// crea funzione che calcoli distanza da bersaglio
-// crea funzione che calcoli azzeramento
+
 // crea funzione che calcoli angolo di tiro e aggiustamento torrette
-// crea funzione che chiami il salvataggio dei dati

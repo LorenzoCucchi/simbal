@@ -9,7 +9,7 @@ class Mission {
   auto zeroing() -> bool;
   auto missDistance(std::array<Eigen::Vector3d, 2>& pos_data)
       -> Eigen::Vector3d;
-  auto calcCorrection(Eigen::Vector3d& miss) -> Eigen::Vector3d;
+  auto calcCorrection(Eigen::Vector3d& miss) const -> Eigen::Vector3d;
 
  private:
   struct coord_struct {

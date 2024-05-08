@@ -17,6 +17,7 @@ void PointMass::init(Eigen::Vector3d& vel_b, Eigen::Vector3d& euler_angles,
                      double in_alt, Eigen::Vector2d& coord_angles,
                      double deltaTime) {
   this->dt = deltaTime;
+  this->time = 0;
   initial_state.setZero();
 
   initial_state.block<3, 1>(0, 0) = Frames::R_fb(euler_angles) * vel_b;
