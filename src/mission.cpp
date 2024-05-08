@@ -105,86 +105,70 @@ auto Mission::zeroing() -> bool {
       std::atan(projcetile_.sight_height / target_.distance) +
       target_.los_angle * M_PI / 180.0;
   Eigen::Vector3d vel_b{projcetile_.velocity, 0, 0};
-  Eigen::Vector3d euler_angles{0, initial_theta,
-                               target_.azimuth * M_PI / 180.0};
   Eigen::Vector2d coord_angles{coordinates_.lat, coordinates_.lon};
 
-  eom.init(vel_b, euler_angles, coordinates_.alt, coord_angles, 0.0001);
+  //LoggerState<Eigen::Matrix<double, 37, 1>> logEom(
+  //    0.5 * 1024 * 1024 * 1024, "logEom.txt", eom.getDataName());
+  //logEom.initLog();
+
+  // residual and tolerance
+  double tol = 0.01;
+  double resid = 1.0;
+
+  // targeting correction and passing point vectors
+  Eigen::Vector3d correction{0, 0, 0};
+  Eigen::Vector3d corrected{0, 0, 0};
+  Eigen::Vector3d passing_point{0, 0, 0};
+
+  // position and distance holder variables
   Eigen::Vector3d pos_b{0.0, 0.0, 0.0};
-
   double distance_init = (target_.position - pos_b).norm();
-
   std::array<Eigen::Vector3d, 2> pos_data = {pos_b, pos_b};
   std::array<double, 2> distance = {distance_init, distance_init};
 
-  LoggerState<Eigen::Matrix<double, 37, 1>> logEom(
-      0.5 * 1024 * 1024 * 1024, "logEom.txt", eom.getDataName());
-  logEom.initLog();
+  while (resid > tol) {
 
-  while (pos_b.block<2, 1>(0, 0).norm() < target_.distance*1.01) {
-    eom.step();
-    pos_b = eom.getPos();
-    //std::cout << "pos_b:\n " << pos_b << std::endl;
-    distance.at(0) = distance.at(1);
-    pos_data.at(0) = pos_data.at(1);
-    pos_data.at(1) = pos_b;
-    distance.at(1) = (target_.position - pos_b).norm();
-    //std::cout << "Distance: " << distance.at(1) << std::endl;
-    logEom.addData(eom.getData());
-    if (distance.at(1) > distance.at(0)) {
-      logEom.flushData();
-      break;
+    pos_b = {0.0, 0.0, 0.0};
+    distance_init = (target_.position - pos_b).norm();
+    pos_data = {pos_b, pos_b};
+    distance = {distance_init, distance_init};
+
+    corrected += correction;
+    Eigen::Vector3d euler_angles{
+        0, initial_theta + corrected(1),
+        (target_.azimuth * M_PI / 180.0 - corrected(2))};
+
+    eom.init(vel_b, euler_angles, coordinates_.alt, coord_angles, 0.001);
+
+    while (pos_b.block<2, 1>(0, 0).norm() < target_.distance * 1.01) {
+      eom.step();
+      pos_b = eom.getPos();
+      //std::cout << "pos_b:\n " << pos_b << std::endl;
+      distance.at(0) = distance.at(1);
+      pos_data.at(0) = pos_data.at(1);
+      pos_data.at(1) = pos_b;
+      distance.at(1) = (target_.position - pos_b).norm();
+      //std::cout << "Distance: " << distance.at(1) << std::endl;
+      //logEom.addData(eom.getData());
+      if (distance.at(1) > distance.at(0)) {
+        //logEom.flushData();
+        break;
+      }
     }
+    passing_point = missDistance(pos_data);
+    resid = passing_point.norm();
+    correction = calcCorrection(passing_point);
   }
 
-  Eigen::Vector3d passing_point = missDistance(pos_data);
-  std::cout << "Passing point:\n " << passing_point << std::endl;
-  Eigen::Vector3d correction = calcCorrection(passing_point);
-  std::cout << "Ang correction:\n " << correction << std::endl;
-
-  // _________________________________________________________________
-  double theta_corr = initial_theta + correction(1);
-
-  Eigen::Vector3d euler_correct{
-      0, theta_corr, (target_.azimuth * M_PI / 180.0 - correction(2))};
-
-  eom.init(vel_b, euler_correct, coordinates_.alt, coord_angles, 0.0001);
-
-  pos_data = {pos_b, pos_b};
-  distance = {distance_init, distance_init};
-
-  LoggerState<Eigen::Matrix<double, 37, 1>> logEom2(
-      0.5 * 1024 * 1024 * 1024, "logEom_corr.txt", eom.getDataName());
-  logEom2.initLog();
-
-  while (pos_b.block<2, 1>(0, 0).norm() < target_.distance) {
-    eom.step();
-    pos_b = eom.getPos();
-    //std::cout << "pos_b:\n " << pos_b << std::endl;
-    distance.at(0) = distance.at(1);
-    pos_data.at(0) = pos_data.at(1);
-    pos_data.at(1) = pos_b;
-    distance.at(1) = (target_.position - pos_b).norm();
-    //std::cout << "Distance: " << distance.at(1) << std::endl;
-    logEom2.addData(eom.getData());
-    if (distance.at(1) > distance.at(0)) {
-      logEom2.flushData();
-      break;
-    }
-  }
-
-  passing_point = missDistance(pos_data);
-  std::cout << "Miss distance:\n " << passing_point << std::endl;
-  correction = calcCorrection(passing_point);
-  std::cout << "Ang correction:\n " << calcCorrection(passing_point)
-            << std::endl;
+  std::cout << "Passing point:\n " << missDistance(pos_data) << "\n\n";
+  std::cout << "Residual:\n " << resid << "\n\n";
+  std::cout << "Ang correction MRAD:\n " << corrected * 1000 << "\n\n";
 
   return true;
 }
 
 auto Mission::missDistance(std::array<Eigen::Vector3d, 2>& pos_data)
     -> Eigen::Vector3d {
-  std::cout << target_.position << std::endl;
   double t_interp =
       (target_.position.block<2, 1>(0, 0) - pos_data.at(0).block<2, 1>(0, 0))
           .norm() /
